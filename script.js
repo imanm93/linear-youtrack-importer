@@ -4,6 +4,7 @@ import csv from 'csvtojson';
 import j2m from 'jira2md';
 import { importIssues } from './importIssues.js';
 import { getTeamMemberName } from './utils/replaceTeam.js';
+import { replacePriority } from './utils/replacePriority.js';
 
 /**
  * Import issues from a Jira CSV export.
@@ -39,6 +40,10 @@ export class YouTrackCsvImporter {
     const statuses = Array.from(new Set(data.map(row => row.State)));
     const assignees = Array.from(new Set(data.map(row => getTeamMemberName(row.Assignee))));
 
+    console.log('====================================');
+    console.log(assignees);
+    console.log('====================================');
+  
     for (const user of assignees) {
       importData.users[user] = {
         name: user,
@@ -60,8 +65,8 @@ export class YouTrackCsvImporter {
         : undefined;
       const description = mdDesc;
       const priority = mapPriority(row.Priority);
-      const type = `${row['Type']}`;
-      const tags = row.Tags ? row.Tags.split(',') : [];
+      // const type = `${row['Type']}`;
+      const tags = row.Tags ? row.Tags.split(',').map(t => t.trim()) : [];
       const release =
         row.Release && row.Release.length > 0
           ? `Release: ${row.Release}`
@@ -70,7 +75,7 @@ export class YouTrackCsvImporter {
         row.Assignee && row.Assignee.length > 0 ? getTeamMemberName(row.Assignee) : undefined;
       const status = row.Resolved ? 'Done' : row.State;
 
-      const labels = type ? [type] : [];
+      const labels = [];
       if (tags) {
         labels.push(...tags);
       }
@@ -114,7 +119,7 @@ const mapPriority = input => {
     Low: 4,
     Lowest: 0,
   };
-  return priorityMap[input] || 0;
+  return replacePriority[input] || 0;
 };
 
 
@@ -126,6 +131,7 @@ const questions = [
     type: 'filePath',
     name: 'youtrackFilePath',
     message: 'Select your exported CSV file of YouTrack issues',
+    default: 'Issues.csv',
   },
 ];
 

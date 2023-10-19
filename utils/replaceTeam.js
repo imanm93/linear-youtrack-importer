@@ -1,5 +1,5 @@
 const TEAM_MEMBER_MAP = {
-    'assigneeIdFromCSV': 'assigneeEmailInLinear'
+    'name in spreadsheet': 'ZOE email',
 };
 
 export const getTeamMemberName = (assignee) => {
